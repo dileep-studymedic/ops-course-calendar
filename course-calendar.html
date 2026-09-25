@@ -1,0 +1,1483 @@
+<title>Course Calendar Analytics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    color-scheme: light;
+    --bg: #F2F4F3;
+    --surface: #FFFFFF;
+    --surface-2: #F7F8F7;
+    --border: rgba(11,11,11,0.10);
+    --border-strong: rgba(11,11,11,0.16);
+    --text: #14181B;
+    --text-2: #52514E;
+    --text-muted: #898781;
+    --accent: #1c5cab;
+    --accent-soft: #E7F0FB;
+    --good: #0ca30c;
+    --good-soft: #E5F6E5;
+    --warn: #b8790a;
+    --warn-soft: #FCF0DA;
+    --pending: #757068;
+    --pending-soft: #EEECE8;
+    --critical: #c23b2f;
+    --critical-soft: #FBE9E6;
+    --code-0: #2a78d6; --code-1: #d2591c; --code-2: #128a5e; --code-3: #a86e00;
+    --code-4: #7a4fd1; --code-5: #b3186f; --code-6: #167b7b; --code-7: #8a6d1f;
+    --code-8: #4f61c9; --code-9: #b0562e;
+    --shadow: 0 1px 2px rgba(20,24,27,0.04), 0 8px 24px rgba(20,24,27,0.06);
+    --radius: 14px;
+    --hl-bg: #101a33;
+    --hl-bg-2: #16224a;
+    --hl-text: #F4F6FB;
+    --hl-muted: #97A2C4;
+    --hl-accent: #e8b23d;
+    --hl-good: #3fd67f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg: #15181B;
+      --surface: #1D2226;
+      --surface-2: #23282C;
+      --border: rgba(255,255,255,0.10);
+      --border-strong: rgba(255,255,255,0.18);
+      --text: #F3F5F6;
+      --text-2: #C3C2B7;
+      --text-muted: #8F9499;
+      --accent: #6fa6e8;
+      --accent-soft: rgba(111,166,232,0.14);
+      --good: #3fc23f;
+      --good-soft: rgba(63,194,63,0.14);
+      --warn: #f0b544;
+      --warn-soft: rgba(240,181,68,0.14);
+      --pending: #b0aca3;
+      --pending-soft: rgba(176,172,163,0.12);
+      --critical: #ea6b5e;
+      --critical-soft: rgba(234,107,94,0.16);
+      --code-0: #5c9ce8; --code-1: #e8834a; --code-2: #29b183; --code-3: #e0a72f;
+      --code-4: #a98af0; --code-5: #e87ac2; --code-6: #4fc2c2; --code-7: #d1b25c;
+      --code-8: #8fa4f0; --code-9: #e0916a;
+      --shadow: 0 1px 2px rgba(0,0,0,0.24), 0 8px 24px rgba(0,0,0,0.30);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg: #15181B;
+    --surface: #1D2226;
+    --surface-2: #23282C;
+    --border: rgba(255,255,255,0.10);
+    --border-strong: rgba(255,255,255,0.18);
+    --text: #F3F5F6;
+    --text-2: #C3C2B7;
+    --text-muted: #8F9499;
+    --accent: #6fa6e8;
+    --accent-soft: rgba(111,166,232,0.14);
+    --good: #3fc23f;
+    --good-soft: rgba(63,194,63,0.14);
+    --warn: #f0b544;
+    --warn-soft: rgba(240,181,68,0.14);
+    --pending: #b0aca3;
+    --pending-soft: rgba(176,172,163,0.12);
+    --critical: #ea6b5e;
+    --critical-soft: rgba(234,107,94,0.16);
+    --code-0: #5c9ce8; --code-1: #e8834a; --code-2: #29b183; --code-3: #e0a72f;
+    --code-4: #a98af0; --code-5: #e87ac2; --code-6: #4fc2c2; --code-7: #d1b25c;
+    --code-8: #8fa4f0; --code-9: #e0916a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.24), 0 8px 24px rgba(0,0,0,0.30);
+  }
+
+  *{ box-sizing: border-box; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding-inline: 20px;
+    padding-block: 20px 48px;
+  }
+  h1,h2,h3, .display{ font-family: "Manrope", system-ui, sans-serif; letter-spacing: -0.01em; }
+  .num{ font-variant-numeric: tabular-nums; }
+  a{ color: var(--accent); }
+  button, select, input{ font-family: inherit; }
+
+  .shell{ max-width: 1320px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+  /* ---------- Top bar ---------- */
+  .topbar{ display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .topbar .heading{ min-width: 0; }
+  .integration-badge{
+    display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 10px 4px 8px; margin-bottom: 8px;
+  }
+  .integration-badge .dot{ width: 8px; height: 8px; border-radius: 50%; background: var(--pending); flex: none; }
+  .integration-badge.live .dot{ background: var(--good); box-shadow: 0 0 0 3px var(--good-soft); }
+  h1.title{ font-size: 25px; font-weight: 800; margin: 0 0 4px; text-wrap: balance; }
+  .subtitle{ color: var(--text-2); font-size: 14px; max-width: 62ch; margin: 0; }
+  .topbar-actions{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: none; }
+  .btn{
+    display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font: inherit; font-size: 13px; font-weight: 600; padding: 9px 14px; border-radius: 10px;
+    cursor: pointer; box-shadow: var(--shadow); white-space: nowrap;
+  }
+  .btn:hover{ border-color: var(--border-strong); }
+  .btn:disabled{ opacity: 0.55; cursor: wait; }
+  .btn svg{ flex: none; }
+  .btn-primary{ background: var(--text); color: var(--surface); border-color: var(--text); }
+  .sync-status{ font-size: 11.5px; color: var(--text-muted); text-align: right; margin-top: 4px; }
+  .sync-status.error{ color: var(--warn); }
+  .sync-note{
+    font-size: 12.5px; color: var(--warn); background: var(--warn-soft); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 12px;
+  }
+
+  /* ---------- Stat tiles ---------- */
+  .stats{ display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .stat{
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 16px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow);
+  }
+  .stat .top-row{ display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .stat .label{ font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
+  .stat .icon{
+    width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .stat .icon.tone-neutral{ background: var(--accent-soft); color: var(--accent); }
+  .stat .icon.tone-good{ background: var(--good-soft); color: var(--good); }
+  .stat .icon.tone-warn{ background: var(--warn-soft); color: var(--warn); }
+  .stat .icon.tone-accent{ background: var(--critical-soft); color: var(--critical); }
+  .stat .value{ font-size: 26px; font-weight: 800; font-family: "Manrope"; }
+  .stat .sub{ font-size: 12px; font-weight: 600; }
+  .stat .sub.good{ color: var(--good); }
+  .stat .sub.warn{ color: var(--critical); }
+  .stat .sub.muted{ color: var(--text-muted); font-weight: 500; }
+  .stat .target-bar{ height: 5px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-top: 2px; position: relative; }
+  .stat .target-bar > i{ display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--critical), var(--warn)); }
+
+  /* ---------- Highlights banner ---------- */
+  .highlights{
+    background: linear-gradient(135deg, var(--hl-bg), var(--hl-bg-2)); color: var(--hl-text);
+    border-radius: var(--radius); padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: center;
+    box-shadow: var(--shadow);
+  }
+  .highlights .hl-title{
+    display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--hl-accent); flex: 1 1 100%;
+  }
+  .highlights .hl-title svg{ flex: none; }
+  .hl-item{ display: flex; flex-direction: column; gap: 3px; min-width: 108px; }
+  .hl-item .k{ font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--hl-muted); }
+  .hl-item .v{ font-size: 15px; font-weight: 700; font-family: "Manrope"; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+  .hl-item .v.good{ color: var(--hl-good); }
+  @media (max-width: 700px){ .highlights{ padding: 14px 16px; } .hl-item{ min-width: 42%; } }
+
+  /* ---------- Controls / filters ---------- */
+  .controls{
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px 14px; box-shadow: var(--shadow);
+  }
+  .search{
+    flex: 1 1 240px; min-width: 200px; display: flex; align-items: center; gap: 8px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px; padding: 8px 11px;
+  }
+  .search input{ border: none; background: transparent; color: var(--text); font: inherit; font-size: 13.5px; width: 100%; outline: none; }
+  .search svg{ flex: none; color: var(--text-muted); }
+  .reset-link{
+    border: none; background: transparent; color: var(--accent); font: inherit; font-size: 12.5px; font-weight: 700;
+    cursor: pointer; padding: 6px 4px; flex: none;
+  }
+  .filter-grid{
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 8px 10px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px;
+    box-shadow: var(--shadow);
+  }
+  .filter-field{ display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .filter-field label{ font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .filter-field select{
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; font-size: 12.5px;
+    font-weight: 600; padding: 7px 8px; border-radius: 8px; cursor: pointer; width: 100%;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------- Tab bar ---------- */
+  .tabbar{
+    display: flex; gap: 4px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 6px; box-shadow: var(--shadow);
+  }
+  .tabbtn{
+    display: inline-flex; align-items: center; gap: 6px; border: none; background: transparent; color: var(--text-2);
+    font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; border-radius: 9px; cursor: pointer;
+  }
+  .tabbtn:hover{ background: var(--surface-2); }
+  .tabbtn[aria-selected="true"]{ background: var(--accent-soft); color: var(--text); }
+  .tabbtn .tabcount{
+    font-size: 10.5px; font-weight: 700; color: var(--text-muted); background: var(--surface-2);
+    border-radius: 999px; padding: 1px 6px;
+  }
+  .tabbtn[aria-selected="true"] .tabcount{ background: var(--surface); color: var(--accent); }
+  .tabbtn .tabcount.alert{ background: var(--critical-soft); color: var(--critical); }
+
+  /* ---------- Views / panels ---------- */
+  .view{ display: flex; flex-direction: column; gap: 14px; }
+  .panel{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+  .panel-head{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .panel-head h2{ font-size: 15px; margin: 0; }
+  .panel-head p{ margin: 2px 0 0; font-size: 12.5px; color: var(--text-muted); max-width: 60ch; }
+  .badge-action{ font-size: 11px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+  .link-btn{ border: none; background: none; color: var(--accent); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; padding: 0; white-space: nowrap; }
+
+  .two-col{ display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; align-items: start; }
+  @media (max-width: 880px){ .two-col{ grid-template-columns: 1fr; } }
+
+  /* Pipeline (awaiting confirmations) */
+  .pipeline-list{ display: flex; flex-direction: column; gap: 10px; }
+  .pipeline-card{ border: 1px solid var(--border); border-radius: 11px; padding: 11px 13px; display: flex; flex-direction: column; gap: 6px; }
+  .pipeline-card .row1{ display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .pipeline-card .batch-name{ font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pipeline-card .meta{ font-size: 11.5px; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap; }
+  .count-pill{ font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--warn-soft); color: var(--warn); white-space: nowrap; flex: none; }
+
+  /* Upcoming sessions */
+  .upcoming-list{ display: flex; flex-direction: column; gap: 2px; }
+  .upcoming-row{ display: grid; grid-template-columns: 46px 1fr auto; gap: 10px; align-items: center; padding: 9px 2px; border-bottom: 1px solid var(--border); }
+  .upcoming-row:last-child{ border-bottom: none; }
+  .date-badge{
+    display: flex; flex-direction: column; align-items: center; justify-content: center; width: 46px; height: 42px;
+    border-radius: 9px; background: var(--surface-2); border: 1px solid var(--border); flex: none;
+  }
+  .date-badge .mo{ font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: var(--critical); letter-spacing: 0.03em; }
+  .date-badge .dy{ font-size: 15px; font-weight: 800; font-family: "Manrope"; line-height: 1.1; }
+  .upcoming-row .name{ font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .upcoming-row .meta{ font-size: 11.5px; color: var(--text-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .status-pill{
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 4px 9px;
+    border-radius: 999px; white-space: nowrap;
+  }
+  .status-pill .dot{ width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+  .status-pill.Confirmed{ background: var(--good-soft); color: var(--good); }
+  .status-pill.TBC{ background: var(--warn-soft); color: var(--warn); }
+  .status-pill.Pending{ background: var(--pending-soft); color: var(--pending); }
+  .status-pill.clash{ background: var(--critical-soft); color: var(--critical); }
+  .row-wrap{ display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .empty-state{ color: var(--text-muted); font-size: 13px; padding: 14px 2px; }
+  .section-label{ font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0; }
+
+  /* Session rows (agenda / pending lists) */
+  .session-row{ display: grid; grid-template-columns: 3px 1fr auto; gap: 10px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--border); }
+  .session-row:last-child{ border-bottom: none; }
+  .session-row .bar{ align-self: stretch; border-radius: 2px; }
+  .session-main{ min-width: 0; }
+  .session-main .name{ font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .session-main .meta{ font-size: 11.5px; color: var(--text-muted); display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+
+  /* Calendar */
+  .cal-nav{ display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  .cal-nav .month{ font-family: "Manrope"; font-weight: 700; font-size: 16px; }
+  .navbtn{
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text); width: 30px; height: 30px;
+    border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font: inherit;
+  }
+  .navbtn:disabled{ opacity: 0.35; cursor: not-allowed; }
+  .navbtn.today{ width: auto; padding: 0 12px; font-size: 12.5px; font-weight: 600; }
+  .cal-grid{ display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-dow{ font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: center; padding-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .cal-day{
+    border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); min-height: 76px;
+    padding: 6px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; text-align: left; font: inherit; color: var(--text);
+  }
+  .cal-day.out{ opacity: 0.35; }
+  .cal-day.today{ border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .cal-day.selected{ background: var(--accent-soft); border-color: var(--accent); }
+  .cal-day.has-clash{ border-color: var(--critical); }
+  .cal-day .dnum{ font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 5px; }
+  .dnum .clash-dot{ width: 6px; height: 6px; border-radius: 50%; background: var(--critical); flex: none; }
+  .cal-day .events{ display: flex; flex-direction: column; gap: 2px; }
+  .ev-chip{ display: flex; align-items: center; gap: 4px; font-size: 10.5px; line-height: 1.3; }
+  .ev-chip .dot{ width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .ev-chip span{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+  .ev-more{ font-size: 10px; color: var(--text-muted); font-weight: 600; }
+  @media (max-width: 640px){ .cal-day{ min-height: 58px; padding: 4px; } .ev-chip span{ display: none; } .ev-chip{ justify-content: center; } }
+  .agenda{ display: flex; flex-direction: column; gap: 10px; }
+  .agenda-head{ display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .agenda-head h3{ font-size: 14px; margin: 0; }
+  .mis-pill{ font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+
+  /* Table */
+  .table-wrap{ overflow-x: auto; }
+  table.sessions{ width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.sessions th{
+    text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);
+    font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--border-strong); white-space: nowrap;
+  }
+  table.sessions td{ padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.sessions tr:last-child td{ border-bottom: none; }
+  table.sessions td.date{ white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--text-2); }
+  table.sessions td.name{ font-weight: 500; max-width: 260px; }
+  .course-tag{ display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); white-space: nowrap; }
+  .course-tag .dot{ width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  tr.clash-row{ background: var(--critical-soft); }
+
+  /* Generic metric rows (coordinators / team leads / courses / batches / rates) */
+  .metric-list{ display: flex; flex-direction: column; gap: 2px; }
+  .metric-row{ display: grid; grid-template-columns: 1fr 130px auto; gap: 14px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border); }
+  .metric-row:last-child{ border-bottom: none; }
+  .metric-name{ min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .metric-name .who{ font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .metric-name .meta{ font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .metric-bar{ height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .metric-bar > i{ display: block; height: 100%; border-radius: 999px; }
+  .metric-meta{ display: flex; align-items: center; gap: 10px; justify-content: flex-end; white-space: nowrap; }
+  .metric-status{ display: flex; gap: 7px; font-size: 10.5px; color: var(--text-muted); }
+  .metric-rate{ font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
+  @media (max-width: 760px){ .metric-row{ grid-template-columns: 1fr; row-gap: 6px; } .metric-meta{ justify-content: space-between; } }
+
+  .course-grid{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 760px){ .course-grid{ grid-template-columns: 1fr; } }
+  .card-tile{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow); }
+  .card-tile .head{ display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .card-tile .head .bar{ width: 4px; align-self: stretch; border-radius: 2px; }
+  .card-tile h3{ font-size: 14.5px; margin: 0 0 3px; }
+  .card-tile .code-status{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .progress{ height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .progress > i{ display: block; height: 100%; border-radius: 999px; }
+  .card-tile .stats-line{ display: flex; gap: 14px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; }
+  .card-tile .stats-line b{ color: var(--text); font-variant-numeric: tabular-nums; }
+  .card-tile .fields{ display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 12px; color: var(--text-2); }
+  .card-tile .fields dt{ color: var(--text-muted); }
+  .card-tile .fields dd{ margin: 0; }
+  .card-tile button{
+    margin-top: 2px; align-self: flex-start; border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+    font: inherit; font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: 8px; cursor: pointer;
+  }
+  .card-tile button:hover{ border-color: var(--border-strong); }
+
+  /* Conflicts (folded into Mentors tab) */
+  .conflict-toolbar{ display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .conflict-toolbar p{ margin: 0; font-size: 12.5px; color: var(--text-muted); max-width: 56ch; }
+  .duration-control{ display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-2); white-space: nowrap; }
+  .duration-control select{
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; font-size: 12.5px;
+    font-weight: 600; padding: 6px 9px; border-radius: 8px; cursor: pointer;
+  }
+  .conflict-card{
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--critical);
+    border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .conflict-head{ display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .conflict-head .who{ font-weight: 700; font-size: 14.5px; }
+  .conflict-head .when{ font-size: 12.5px; color: var(--text-muted); }
+  .conflict-sessions{ display: flex; flex-direction: column; gap: 8px; }
+  .conflict-session{ display: grid; grid-template-columns: 3px 1fr auto; gap: 10px; align-items: center; }
+  .conflict-session .bar{ align-self: stretch; border-radius: 2px; }
+  .conflict-session .name{ font-size: 13px; font-weight: 600; }
+  .conflict-session .meta{ font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+  .conflict-session .clock{ font-size: 12.5px; font-weight: 600; color: var(--critical); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .conflict-note{ font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px; }
+  .all-clear{ display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 28px 16px; color: var(--text-muted); }
+  .all-clear .big{ font-size: 14.5px; font-weight: 700; color: var(--good); font-family: "Manrope"; }
+  .skip-list{ font-size: 12px; color: var(--text-muted); }
+
+  .wl-legend{ display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+  .wl-legend .item{ display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .wl-legend .dot{ width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .wl-row{ display: grid; grid-template-columns: 176px 1fr auto; gap: 16px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border); }
+  .wl-row:last-child{ border-bottom: none; }
+  .wl-name{ min-width: 0; display: flex; align-items: center; gap: 6px; }
+  .wl-name .who{ font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wl-name .multi{ flex: none; font-size: 10px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 1px 6px; }
+  .wl-name .clashflag{ flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--critical); }
+  .wl-bar{ display: flex; height: 14px; border-radius: 4px; overflow: hidden; background: var(--surface-2); gap: 2px; }
+  .wl-bar .seg{ height: 100%; border-radius: 3px; min-width: 3px; }
+  .wl-meta{ display: flex; align-items: center; gap: 12px; justify-content: flex-end; white-space: nowrap; }
+  .wl-status{ display: flex; gap: 8px; font-size: 11px; color: var(--text-muted); }
+  .wl-total{ font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 18px; text-align: right; }
+  @media (max-width: 700px){ .wl-row{ grid-template-columns: 1fr; row-gap: 6px; } .wl-meta{ justify-content: space-between; } }
+
+  .rates-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 900px){ .rates-grid{ grid-template-columns: 1fr; } }
+
+  footer.pagefoot{ text-align: center; color: var(--text-muted); font-size: 12px; padding-top: 8px; }
+  [hidden]{ display: none !important; }
+</style>
+
+<div class="shell">
+  <div class="sync-note" id="syncNote" hidden></div>
+
+  <div class="topbar">
+    <div class="heading">
+      <div class="integration-badge" id="integrationBadge"><span class="dot"></span><span id="integrationLabel">Demo snapshot</span></div>
+      <h1 class="title">Course Calendar Analytics</h1>
+      <p class="subtitle">Real-time session monitoring, mentor confirmation pipelines, and coordinator metrics — built from the Course Calendar (2027–2028) mastersheet.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+      <div class="topbar-actions">
+        <button class="btn" id="syncBtn" title="Refresh from the Google Sheet">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16M3 21v-5h5"/></svg>
+          Fetch Google Sheet
+        </button>
+        <button class="btn btn-primary" id="exportBtn" title="Export sessions to CSV">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          Export to CSV
+        </button>
+      </div>
+      <span class="sync-status num" id="syncStatus"></span>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="highlights">
+    <div class="hl-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.6L19 9.5l-5.2 1.9L12 17l-1.8-5.6L5 9.5l5.2-1.9L12 2Z"/><path d="M19 15l.8 2.5L22 18.5l-2.2.9L19 22l-.8-2.6L16 18.5l2.2-1L19 15Z" opacity=".7"/></svg>
+      Operational Dashboard Highlights
+    </div>
+    <div class="hl-item"><span class="k">Top course</span><span class="v" id="hlCourse">—</span></div>
+    <div class="hl-item"><span class="k">Top batch</span><span class="v" id="hlBatch" title="">—</span></div>
+    <div class="hl-item"><span class="k">Top mentor</span><span class="v" id="hlMentor">—</span></div>
+    <div class="hl-item"><span class="k">Top coordinator</span><span class="v" id="hlCoordinator">—</span></div>
+    <div class="hl-item"><span class="k">Overall rate</span><span class="v good" id="hlRate">—</span></div>
+    <div class="hl-item"><span class="k">Next session</span><span class="v" id="hlNext" title="">—</span></div>
+  </div>
+
+  <div class="controls">
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="text" placeholder="Search sessions, mentors, batches, session names…" autocomplete="off">
+    </div>
+    <button class="reset-link" id="resetFilters">Reset all</button>
+  </div>
+
+  <div class="filter-grid">
+    <div class="filter-field"><label for="f-course">Course</label><select id="f-course"></select></div>
+    <div class="filter-field"><label for="f-batch">Batch</label><select id="f-batch"></select></div>
+    <div class="filter-field"><label for="f-coordinator">Coordinator</label><select id="f-coordinator"></select></div>
+    <div class="filter-field"><label for="f-teamlead">Team lead</label><select id="f-teamlead"></select></div>
+    <div class="filter-field"><label for="f-mentor">Mentor</label><select id="f-mentor"></select></div>
+    <div class="filter-field"><label for="f-month">Month</label><select id="f-month"></select></div>
+    <div class="filter-field"><label for="f-status">Confirm status</label><select id="f-status">
+      <option value="all">All status</option>
+      <option value="Confirmed">Confirmed</option>
+      <option value="TBC">To be confirmed</option>
+      <option value="Pending">Not yet updated</option>
+    </select></div>
+  </div>
+
+  <nav class="tabbar" role="tablist" aria-label="Section">
+    <button class="tabbtn" role="tab" data-view="overview" aria-selected="true">Overview</button>
+    <button class="tabbtn" role="tab" data-view="pending" aria-selected="false">Pending <span class="tabcount" id="countPending">0</span></button>
+    <button class="tabbtn" role="tab" data-view="coordinators" aria-selected="false">Coordinators</button>
+    <button class="tabbtn" role="tab" data-view="teamleads" aria-selected="false">Team Leads</button>
+    <button class="tabbtn" role="tab" data-view="courses" aria-selected="false">Courses</button>
+    <button class="tabbtn" role="tab" data-view="batches" aria-selected="false">Batches</button>
+    <button class="tabbtn" role="tab" data-view="mentors" aria-selected="false">Mentors <span class="tabcount alert" id="countConflicts" hidden>0</span></button>
+    <button class="tabbtn" role="tab" data-view="sessions" aria-selected="false">Sessions <span class="tabcount" id="countSessions">0</span></button>
+    <button class="tabbtn" role="tab" data-view="rates" aria-selected="false">Confirmation Rates</button>
+    <button class="tabbtn" role="tab" data-view="calendar" aria-selected="false">Month Calendar</button>
+  </nav>
+
+  <!-- Overview -->
+  <div class="view" id="view-overview">
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Awaiting Confirmations Pipeline</h2><p>Batches with pending session confirmation requests. Coordinators must reach out to mentors and update status to avoid scheduling conflicts.</p></div>
+          <span class="badge-action" id="pipelineBadge">Action required</span>
+        </div>
+        <div class="pipeline-list" id="pipelineList"></div>
+        <div style="margin-top:8px; text-align:right;"><button class="link-btn" data-goto="pending">View all →</button></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Upcoming Sessions</h2>
+          <button class="link-btn" data-goto="sessions">View all</button>
+        </div>
+        <div class="upcoming-list" id="upcomingList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending -->
+  <div class="view" id="view-pending" hidden>
+    <div class="panel">
+      <div class="panel-head"><div><h2>Sessions awaiting confirmation</h2><p>Every non-confirmed session, grouped by batch, honoring the filters above.</p></div></div>
+      <div class="pipeline-list" id="pendingFullList"></div>
+    </div>
+  </div>
+
+  <!-- Coordinators -->
+  <div class="view" id="view-coordinators" hidden>
+    <div class="panel">
+      <div class="panel-head"><div><h2>Coordinators</h2><p>Sessions and confirmation rate for every coordinator on record in the MIS tab.</p></div></div>
+      <div class="metric-list" id="coordinatorList"></div>
+    </div>
+  </div>
+
+  <!-- Team leads -->
+  <div class="view" id="view-teamleads" hidden>
+    <div class="panel">
+      <div class="panel-head"><div><h2>Team leads</h2><p>Sessions and confirmation rate for every team lead on record in the MIS tab.</p></div></div>
+      <div class="metric-list" id="teamleadList"></div>
+    </div>
+  </div>
+
+  <!-- Courses -->
+  <div class="view" id="view-courses" hidden>
+    <div class="course-grid" id="courseGrid"></div>
+  </div>
+
+  <!-- Batches -->
+  <div class="view" id="view-batches" hidden>
+    <div class="course-grid" id="batchGrid"></div>
+  </div>
+
+  <!-- Mentors -->
+  <div class="view" id="view-mentors" hidden>
+    <div class="panel conflict-toolbar">
+      <p>Flags any mentor booked into two or more sessions on the same date whose times overlap. Since the sheet only records a start time, each session is assumed to run for a fixed length.</p>
+      <div class="duration-control">
+        <label for="durationSelect">Assume each session lasts</label>
+        <select id="durationSelect">
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60" selected>60 min</option>
+          <option value="90">90 min</option>
+          <option value="120">120 min</option>
+        </select>
+      </div>
+    </div>
+    <div id="conflictList" style="display:flex; flex-direction:column; gap:12px;"></div>
+    <div class="panel">
+      <p class="section-label">Mentors by session load</p>
+      <p style="margin:4px 0 10px; font-size:12.5px; color:var(--text-muted); max-width:74ch;">Total sessions assigned to each mentor, across every course and batch. Placeholder mentors (TBC/NA) are excluded and name variants are combined. Sorted by total sessions.</p>
+      <div class="wl-legend" id="workloadLegend"></div>
+      <div id="workloadList" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Sessions -->
+  <div class="view" id="view-sessions" hidden>
+    <div class="panel">
+      <p class="section-label">Scheduled sessions</p>
+      <div class="table-wrap">
+        <table class="sessions" id="sessionTable">
+          <thead><tr><th>Date</th><th>Course</th><th>Batch</th><th>Session</th><th>Mentor</th><th>Time</th><th>Status</th></tr></thead>
+          <tbody id="sessionTbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel" id="unscheduledPanel"></div>
+  </div>
+
+  <!-- Confirmation rates -->
+  <div class="view" id="view-rates" hidden>
+    <div class="rates-grid">
+      <div class="panel"><p class="section-label">By course</p><div class="metric-list" id="rateCourse"></div></div>
+      <div class="panel"><p class="section-label">By batch</p><div class="metric-list" id="rateBatch"></div></div>
+      <div class="panel"><p class="section-label">By coordinator</p><div class="metric-list" id="rateCoordinator"></div></div>
+      <div class="panel"><p class="section-label">By team lead</p><div class="metric-list" id="rateTeamlead"></div></div>
+      <div class="panel" style="grid-column:1/-1;"><p class="section-label">By month</p><div class="metric-list" id="rateMonth"></div></div>
+    </div>
+  </div>
+
+  <!-- Month calendar -->
+  <div class="view" id="view-calendar" hidden>
+    <div class="panel">
+      <div class="cal-nav">
+        <button class="navbtn" id="prevMonth" aria-label="Previous month">‹</button>
+        <div class="month display" id="monthLabel"></div>
+        <div style="display:flex; gap:6px;">
+          <button class="navbtn today" id="todayBtn">Today</button>
+          <button class="navbtn" id="nextMonth" aria-label="Next month">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="dowRow"></div>
+      <div class="cal-grid" id="calGrid" style="margin-top:6px;"></div>
+    </div>
+    <div class="panel agenda" id="agendaPanel"></div>
+  </div>
+
+  <footer class="pagefoot" id="footerNote">Demo data snapshot from Google Sheets · Course Calendar (2027–2028) · generated <span id="genDate"></span></footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script id="session-data" type="application/json">{"generated":"2026-09-25","sessions":[{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":1,"date":"2026-09-03","date_end":null,"time":"21:00 IST","session_no":"Intro Session","session_name":"Course Introduction & Orientation","mentor":"Dr Ebinesh","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":2,"date":"2026-09-05","date_end":null,"time":"21:00 IST","session_no":"Session 1","session_name":"Physics Foundation \u2013 Basic Science: Matter & radiation","mentor":"Dr Ebinesh","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":3,"date":"2026-09-10","date_end":null,"time":"21:00 IST","session_no":"Session 2","session_name":"Physics Foundation \u2013 Radiography part 1","mentor":"Dr Ebinesh","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":4,"date":"2026-09-13","date_end":null,"time":"21:00 IST","session_no":"Session 3","session_name":"Physics Foundation \u2013 Radiography part 2","mentor":"Dr Ebinesh","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":5,"date":"2026-09-22","date_end":null,"time":"21:00 IST","session_no":"Session 4","session_name":"Physics - CT Imaging Part 1 (Fundamentals)","mentor":"Dr Ashwin","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":6,"date":"2026-09-28","date_end":null,"time":"21:00 IST","session_no":"Session 5","session_name":"Physics - CT Imaging Part 2 (Advanced)","mentor":"Dr Ashwin","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":7,"date":"2026-10-05","date_end":null,"time":"21:00 IST","session_no":"Session 6","session_name":"Physics Foundation- Ultrasound Imaging part 1","mentor":"Dr Sandeep","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":8,"date":"2026-10-12","date_end":null,"time":"21:00 IST","session_no":"Session 7","session_name":"Physics Foundation- Ultrasound Imaging part 2","mentor":"Dr Sandeep","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":9,"date":"2026-10-19","date_end":null,"time":"21:00 IST","session_no":"Session 8","session_name":"Physics Foundation - MR Imaging part 1","mentor":"Dr Namrata","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":10,"date":"2026-10-27","date_end":null,"time":"21:00 IST","session_no":"Session 9","session_name":"Physics Foundation - MR Imaging part 2","mentor":"Dr Namrata","status":"Confirmed","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":11,"date":"2026-11-04","date_end":null,"time":"21:00 IST","session_no":"Session 10","session_name":"Physics Foundation- Molecular Imaging","mentor":"Dr Tahir","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":12,"date":"2026-11-12","date_end":"2026-11-18","time":null,"session_no":null,"session_name":"Mini Mocks","mentor":"NA","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":13,"date":"2026-11-19","date_end":null,"time":null,"session_no":null,"session_name":"3 Months Introduction","mentor":"Dr Ebinesh","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":14,"date":"2026-11-25","date_end":null,"time":"20:30 IST","session_no":"Session 11","session_name":"Anatomy Revision - Neuroradiology","mentor":"Dr Iram","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":15,"date":"2026-12-02","date_end":null,"time":"20:30 IST","session_no":"Session 12","session_name":"Anatomy Revision - Head & Neck","mentor":"Dr Iram","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":16,"date":"2026-12-09","date_end":null,"time":"21:00 IST","session_no":"Session 13","session_name":"Anatomy Revision -Cardiothoracic and Vascular System","mentor":"Dr Ashwin","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":17,"date":"2026-12-16","date_end":null,"time":"20:00 IST","session_no":"Session 14","session_name":"Anatomy Revision - Musculoskeletal System & Trauma + Paediatric - Part 1","mentor":"Dr Tahir","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":18,"date":"2026-12-22","date_end":null,"time":"20:00 IST","session_no":"Session 15","session_name":"Anatomy Revision - Musculoskeletal System & Trauma + Paediatric - Part 2","mentor":"Dr Tahir","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":19,"date":"2026-12-28","date_end":null,"time":"21:00 IST","session_no":"Session 16","session_name":"Anatomy Revision - Genitourinary, Adrenal, Obstetrics & Gynaecology, Breast","mentor":"Dr Namrata","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":20,"date":"2027-01-04","date_end":null,"time":"21:00 IST","session_no":"Session 17","session_name":"Anatomy Revision - Gastrointestinal System","mentor":"Dr Ashwin","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":21,"date":"2027-01-09","date_end":null,"time":"21:00 1ST","session_no":"Session 18","session_name":"Physics Revision - Basics science & introduction to X -rays","mentor":"Dr Ebinesh","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":22,"date":"2027-01-18","date_end":null,"time":"21:00 1ST","session_no":"Session 19","session_name":"Physics Revision - X Ray","mentor":"Dr Ebinesh","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":23,"date":"2027-01-25","date_end":null,"time":"21:00 1ST","session_no":"Session 20","session_name":"Physics Revision - CT Imaging","mentor":"Dr Ashwin","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":24,"date":"2027-02-02","date_end":null,"time":"21:00 1ST","session_no":"Session 21","session_name":"Physics Revision - Ultrasound Imaging","mentor":"Dr Vikas HP","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":25,"date":"2027-02-09","date_end":null,"time":"21:00 1ST","session_no":"Session 22","session_name":"Physics Revision - MR Imaging","mentor":"Dr Ebnesh","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":26,"date":"2027-02-16","date_end":null,"time":"21:00 1ST","session_no":"Session 23","session_name":"Physics Revision - Molecular Imaging","mentor":"Dr Namrata","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":27,"date":"2027-02-22","date_end":null,"time":"21:00 1ST","session_no":"Session 24","session_name":"Physics Revision - Radiation Dosimetry, Protection & Legislation part 1","mentor":"Dr Bargavee","status":"TBC","remarks":null},{"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","sl":28,"date":"2027-02-27","date_end":null,"time":"21:00 1ST","session_no":"Session 25","session_name":"Physics Revision - Radiation Dosimetry, Protection & Legislation part 2","mentor":"Dr Bargavee","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":1,"date":"2026-08-14","date_end":null,"time":"21:00 IST","session_no":"Intro Session","session_name":"Introduction to the Long Term Course","mentor":"Dr Chitra Diwan","status":"Confirmed","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":2,"date":"2026-08-25","date_end":null,"time":"21:00 IST","session_no":"Session 1","session_name":"Antenatal Care","mentor":"Dr Neha Saxena","status":"Confirmed","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":3,"date":"2026-09-04","date_end":null,"time":"21:00 IST","session_no":"Session 2","session_name":"Maternal Medicine","mentor":"Dr Aysha Ashraf","status":"Confirmed","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":4,"date":"2026-09-15","date_end":null,"time":"21:00 IST","session_no":"Session 3","session_name":"General Gynecology","mentor":"Dr Meenakshi","status":"Confirmed","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":5,"date":"2026-09-25","date_end":null,"time":"21:00 IST","session_no":"Session 4","session_name":"Early pregnancy","mentor":"Dr Nila Surendran","status":"Confirmed","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":6,"date":"2026-10-02","date_end":null,"time":"21:00 IST","session_no":"Session 5","session_name":"Postpartum Problems","mentor":"Dr Priyadarshini Lingaraj","status":"Confirmed","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":7,"date":"2026-10-12","date_end":null,"time":"21:00 IST","session_no":"Session 6","session_name":"Management of Labour","mentor":"Dr Chitra Diwan","status":"Confirmed","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":8,"date":"2026-10-22","date_end":null,"time":"21:00 IST","session_no":"Session 7","session_name":"Management of Delivery","mentor":"Dr Meenakshi","status":"Confirmed","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":9,"date":"2026-10-31","date_end":null,"time":"21:00 IST","session_no":"Session 8","session_name":"Subfertility","mentor":"Dr Ajay","status":"Confirmed","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":10,"date":"2026-11-10","date_end":null,"time":"21:00 IST","session_no":"Session 9","session_name":"SRH","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":11,"date":"2026-11-19","date_end":null,"time":"21:00 IST","session_no":"Session 10","session_name":"Oncology","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":12,"date":"2026-11-28","date_end":null,"time":"21:00 IST","session_no":"Session 11","session_name":"Urogynecology","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":13,"date":"2026-12-07","date_end":null,"time":"21:00 IST","session_no":"Session 12","session_name":"Core surgical skills + Post-Operative Care","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":14,"date":"2026-12-14","date_end":null,"time":"21:00 IST","session_no":"Session 13","session_name":"Mock - 1","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":15,"date":"2026-12-24","date_end":null,"time":"21:00 IST","session_no":"Session 14","session_name":"Antenatal Care","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":16,"date":"2027-01-04","date_end":null,"time":"21:00 IST","session_no":"Session 15","session_name":"Maternal Medicine","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":17,"date":"2027-01-14","date_end":null,"time":"21:00 IST","session_no":"Session 16","session_name":"General Gynecology","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":18,"date":"2027-01-23","date_end":null,"time":"21:00 IST","session_no":"Session 17","session_name":"Early pregnancy","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":19,"date":"2027-02-01","date_end":null,"time":"21:00 IST","session_no":"Session 18","session_name":"Postpartum Problems","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":20,"date":"2027-02-10","date_end":null,"time":"21:00 IST","session_no":"Session 19","session_name":"Management of Labour","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":21,"date":"2027-02-19","date_end":null,"time":"21:00 IST","session_no":"Session 20","session_name":"Management of Delivery","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":22,"date":"2027-03-01","date_end":null,"time":"21:00 IST","session_no":"Session 21","session_name":"Subfertility","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":23,"date":"2027-03-11","date_end":null,"time":"21:00 IST","session_no":"Session 22","session_name":"SRH","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":24,"date":"2027-03-20","date_end":null,"time":"21:00 IST","session_no":"Session 23","session_name":"Oncology","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":25,"date":"2027-03-30","date_end":null,"time":"21:00 IST","session_no":"Session 24","session_name":"Urogynecology","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":26,"date":"2027-04-08","date_end":null,"time":"21:00 IST","session_no":"Session 25","session_name":"Core surgical skills + Post-Operative Care","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":27,"date":"2027-04-15","date_end":null,"time":"21:00 IST","session_no":"Session 26","session_name":"Mock - 2","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":28,"date":"2027-04-22","date_end":null,"time":"21:00 IST","session_no":"Session 27","session_name":"Mock - 3","mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":29,"date":null,"date_end":null,"time":null,"session_no":"Extra Session 1","session_name":null,"mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":30,"date":null,"date_end":null,"time":null,"session_no":"Extra Session 2","session_name":null,"mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-3 - Long Term May 2027","code":"MRCOG PART-3","sl":31,"date":null,"date_end":null,"time":null,"session_no":"Extra Session 3","session_name":null,"mentor":"TBC","status":"TBC","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":1,"date":"2026-08-07","date_end":null,"time":"21:00 IST","session_no":"Intro Session","session_name":"Introduction to the Long Term course","mentor":"Dr Swati Varma","status":"Confirmed","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":2,"date":"2026-08-17","date_end":null,"time":"21:00 IST","session_no":"Session 1","session_name":"Early Pregnancy","mentor":"Dr Swati Varma","status":"Confirmed","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":3,"date":"2026-08-27","date_end":null,"time":"21:00 IST","session_no":"Session 2","session_name":"Antenatal Care Part 1","mentor":"Dr Vidyasri","status":"Confirmed","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":4,"date":"2026-09-07","date_end":null,"time":"21:00 IST","session_no":"Session 3","session_name":"Antenatal Care Part 2","mentor":"Dr Swati Varma","status":"Confirmed","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":5,"date":"2026-09-13","date_end":null,"time":"21:00 IST","session_no":"Session 4","session_name":"Subfertility Part 1","mentor":"Dr Dinesh","status":"Confirmed","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":6,"date":"2026-09-26","date_end":null,"time":"21:00 IST","session_no":"Session 5","session_name":"Subfertility Part 2","mentor":"Dr Dinesh","status":"Confirmed","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":7,"date":"2026-10-04","date_end":null,"time":"21:00 IST","session_no":"Session 6","session_name":"Core Surgical Skills","mentor":"Dr Garima","status":"Confirmed","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":8,"date":"2026-10-14","date_end":null,"time":"21:00 IST","session_no":"Session 7","session_name":"Post Operative Care.","mentor":"Dr Vidyasri","status":"Confirmed","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":9,"date":"2026-10-23","date_end":null,"time":"21:00 IST","session_no":"Session 8","session_name":"Maternal Medicine Part 1","mentor":"Dr Swati Varma","status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":10,"date":"2026-11-02","date_end":null,"time":"21:00 IST","session_no":"Session 9","session_name":"Maternal Medicine Part 2","mentor":"Dr Shamni","status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":11,"date":"2026-11-10","date_end":null,"time":"21:00 IST","session_no":"Session 10","session_name":"Maternal Medicine Part 3","mentor":"Dr Vidyasri","status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":12,"date":"2026-11-16","date_end":null,"time":"21:00 IST","session_no":"Session 11","session_name":"Labour Part 1","mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":13,"date":"2026-11-21","date_end":null,"time":"21:00 IST","session_no":"Session 12","session_name":"Labour Part 2","mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":14,"date":"2026-11-28","date_end":null,"time":"21:00 IST","session_no":"Session 13","session_name":"Delivery Part 1","mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":15,"date":"2026-12-05","date_end":null,"time":"21:00 IST","session_no":"Session 14","session_name":"Delivery Part 2","mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":16,"date":null,"date_end":null,"time":null,"session_no":null,"session_name":null,"mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":17,"date":null,"date_end":null,"time":null,"session_no":null,"session_name":null,"mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":18,"date":null,"date_end":null,"time":null,"session_no":null,"session_name":null,"mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":19,"date":null,"date_end":null,"time":null,"session_no":null,"session_name":null,"mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":20,"date":null,"date_end":null,"time":null,"session_no":null,"session_name":null,"mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":21,"date":null,"date_end":null,"time":null,"session_no":null,"session_name":null,"mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":22,"date":null,"date_end":null,"time":null,"session_no":null,"session_name":null,"mentor":null,"status":"Pending","remarks":null},{"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","sl":23,"date":null,"date_end":null,"time":null,"session_no":null,"session_name":null,"mentor":null,"status":"Pending","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":1,"date":"2026-08-03","date_end":null,"time":"20:00 IST","session_no":"Intro Session","session_name":"Introduction session + IT orientation","mentor":"Dr Shakkir","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":2,"date":"2026-08-11","date_end":null,"time":"20.00 IST","session_no":"Session 1","session_name":"FLUIDS MANAGEMENT, ACID BASE BALANCE","mentor":"Dr. Gunjan","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":3,"date":"2026-08-19","date_end":null,"time":"20.00 IST","session_no":"Session 2","session_name":"INBORN ERRORS OF METABOLISM","mentor":"Dr. Gunjan","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":4,"date":"2026-08-25","date_end":null,"time":"20.00 IST","session_no":"Session 3","session_name":"CARDIOLOGY","mentor":"Dr. Abhinav","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":5,"date":"2026-09-03","date_end":null,"time":"20.00 IST","session_no":"Session 4","session_name":"GASTROENTEROLOGY AND HEPATOLOGY","mentor":"Dr Rabia","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":6,"date":"2026-09-12","date_end":null,"time":"20.00 IST","session_no":"Session 5","session_name":"INFECTIOUS DISEASE, IMMUNOLOGY","mentor":"Dr Sneha","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":7,"date":"2026-09-21","date_end":null,"time":"20.00 IST","session_no":"Session 6","session_name":"NEPHRO-UROLOGY, OPHTHALMOLOGY","mentor":"Dr. Kapil","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":8,"date":"2026-09-30","date_end":null,"time":"20.00 IST","session_no":"Session 7","session_name":"HEMATOLOGY AND ONCOLOGY","mentor":"Dr Charu Kalra","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":9,"date":"2026-10-08","date_end":null,"time":"20.00 IST","session_no":"Session 8","session_name":"ENDOCRINOLOGY, GROWTH AND DIABETES","mentor":"Dr Harsha","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":10,"date":"2026-10-15","date_end":null,"time":"20.00 IST","session_no":"Session 9","session_name":"RESPIRATORY MEDICINE WITH ENT","mentor":"Dr Anura","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":11,"date":"2026-10-23","date_end":null,"time":"20.00 IST","session_no":"Session 10","session_name":"NEURODISABILITY, BEHAVIOUR AND ADOLESCENT MEDICINE","mentor":"Dr Sangeetha","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":12,"date":"2026-10-29","date_end":null,"time":"20.00 IST","session_no":"Session 11","session_name":"PAEDIATRIC AND NEWBORN GUIDELINES","mentor":"Dr Reshma","status":"Confirmed","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":13,"date":"2026-11-04","date_end":null,"time":"20.00 IST","session_no":"Session 12","session_name":"NEONATOLOGY","mentor":null,"status":"Pending","remarks":null},{"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","sl":14,"date":null,"date_end":null,"time":null,"session_no":null,"session_name":null,"mentor":null,"status":"Pending","remarks":null}],"courses_overview":[{"sl":1,"course":"FRCR PART-1 - 6 Months March 2027","code":"FRCR PART-1","coordinator":null,"team_lead":null,"start":null,"end":null,"status":"In-Progress"},{"sl":2,"course":"MRCOG PART-3 - Long Term March 2027","code":"MRCOG PART-3","coordinator":null,"team_lead":null,"start":null,"end":null,"status":"Not Started"},{"sl":3,"course":"MRCOG PART-2 - Long Course July 2027","code":"MRCOG PART-2","coordinator":null,"team_lead":null,"start":null,"end":null,"status":"Not Started"},{"sl":4,"course":"MRCPCH FOP & TAS - 6 Months Feb 2027","code":"MRCPCH FOP & TAS","coordinator":null,"team_lead":null,"start":null,"end":null,"status":"Not Started"}]}</script>
+<script>
+(function(){
+  "use strict";
+  const INITIAL = JSON.parse(document.getElementById('session-data').textContent);
+  const FILE_ID = '14unvs8ZqVD64beHqBpd3gZiUJd1XVA_BD51rblg_kbg';
+  const CONNECTOR = 'Google Drive';
+
+  let SESSIONS = INITIAL.sessions;
+  let COURSES_OVERVIEW = INITIAL.courses_overview;
+  let codes = [];
+  let batches = [];
+  let dated = [];
+  let minDate = null;
+  let maxDate = null;
+  let codeColorIdx = new Map();
+  let batchOverviewMap = new Map();
+
+  // ---------- date helpers ----------
+  function parseISO(s){ if(!s) return null; const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+  function fmtDate(s){ const d = parseISO(s); if(!d) return '—'; return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}); }
+  const TODAY = new Date(2026, 8, 25); // env date: 25 Sep 2026
+  function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+  function isoOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  const TODAY_ISO = isoOf(TODAY);
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function monthLabelFromKey(key){ const [y,m] = key.split('-').map(Number); return MONTH_NAMES[m-1].slice(0,3) + ' ' + y; }
+
+  function cleanStr(v){
+    if(v === undefined || v === null) return null;
+    if(typeof v === 'string'){ const t = v.trim(); return t === '' ? null : t; }
+    return v;
+  }
+
+  // Recompute everything derived from SESSIONS/COURSES_OVERVIEW (initial load + after live sync)
+  function recomputeDerived(){
+    codes = Array.from(new Set(SESSIONS.map(s => s.code))).sort();
+    batches = Array.from(new Set(SESSIONS.map(s => s.course))).sort();
+    dated = SESSIONS.filter(s => s.date);
+    minDate = dated.reduce((a,s) => { const d = parseISO(s.date); return (!a || d < a) ? d : a; }, null);
+    maxDate = dated.reduce((a,s) => { const d = parseISO(s.date); return (!a || d > a) ? d : a; }, null);
+
+    codeColorIdx = new Map(codes.map((c,i) => [c, i % 10]));
+
+    batchOverviewMap = new Map();
+    batches.forEach(b => {
+      const first = SESSIONS.find(s => s.course === b);
+      let ov = COURSES_OVERVIEW.find(o => o.course === b);
+      if(!ov) ov = COURSES_OVERVIEW.find(o => o.code === first.code);
+      batchOverviewMap.set(b, ov || null);
+    });
+  }
+  recomputeDerived();
+
+  function courseColor(code){
+    const idx = codeColorIdx.has(code) ? codeColorIdx.get(code) : 0;
+    return getComputedStyle(document.documentElement).getPropertyValue('--code-' + idx).trim();
+  }
+  function courseDisplayName(code){
+    const withCode = SESSIONS.filter(s => s.code === code);
+    return withCode.length ? code : code; // code itself is the stable display label (batches carry the long title)
+  }
+  function sessionCoordinator(s){ const ov = batchOverviewMap.get(s.course); return (ov && ov.coordinator) ? ov.coordinator : null; }
+  function sessionTeamLead(s){ const ov = batchOverviewMap.get(s.course); return (ov && ov.team_lead) ? ov.team_lead : null; }
+
+  // ---------- state ----------
+  const state = {
+    view: 'overview',
+    course: 'all', batch: 'all', coordinator: 'all', teamlead: 'all', mentor: 'all', month: 'all', status: 'all',
+    query: '',
+    monthY: TODAY.getFullYear(),
+    monthM: TODAY.getMonth(),
+    selectedDate: isoOf(TODAY),
+    conflictDurationMin: 60,
+  };
+
+  // ---------- mentor conflict detection ----------
+  const MENTOR_PLACEHOLDERS = new Set(['tbc','na','n/a','tba','-','none']);
+  function parseTimeToMinutes(t){
+    if(!t) return null;
+    const m = String(t).match(/(\d{1,2})[:.](\d{2})/);
+    if(!m) return null;
+    const hh = parseInt(m[1], 10), mm = parseInt(m[2], 10);
+    if(hh > 23 || mm > 59) return null;
+    return hh * 60 + mm;
+  }
+  function mentorKeyOf(raw){
+    if(!raw) return null;
+    const collapsed = String(raw).trim().replace(/\s+/g, ' ').replace(/\./g, '').toLowerCase();
+    if(!collapsed || MENTOR_PLACEHOLDERS.has(collapsed)) return null;
+    return collapsed;
+  }
+  function computeConflicts(sessions, durationMin){
+    const groups = new Map();
+    let skippedNoTime = 0, consideredCount = 0;
+    sessions.forEach(s => {
+      if(!s.date) return;
+      const key = mentorKeyOf(s.mentor);
+      if(!key) return;
+      const start = parseTimeToMinutes(s.time);
+      if(start === null){ skippedNoTime++; return; }
+      consideredCount++;
+      const gk = key + '|' + s.date;
+      if(!groups.has(gk)) groups.set(gk, { mentor: String(s.mentor).trim().replace(/\s+/g, ' '), date: s.date, items: [] });
+      groups.get(gk).items.push({ s, start, end: start + durationMin });
+    });
+    const clusters = [];
+    groups.forEach(g => {
+      const items = g.items.slice().sort((a, b) => a.start - b.start);
+      let cluster = [items[0]];
+      let clusterEnd = items[0].end;
+      for(let i = 1; i < items.length; i++){
+        const it = items[i];
+        if(it.start < clusterEnd){ cluster.push(it); clusterEnd = Math.max(clusterEnd, it.end); }
+        else {
+          if(cluster.length >= 2) clusters.push({ mentor: g.mentor, date: g.date, items: cluster });
+          cluster = [it]; clusterEnd = it.end;
+        }
+      }
+      if(cluster.length >= 2) clusters.push({ mentor: g.mentor, date: g.date, items: cluster });
+    });
+    clusters.sort((a, b) => a.date.localeCompare(b.date) || a.mentor.localeCompare(b.mentor));
+    return { clusters, skippedNoTime, consideredCount };
+  }
+  function getConflicts(){ return computeConflicts(SESSIONS, state.conflictDurationMin); }
+  function clashSet(){ const set = new Set(); getConflicts().clusters.forEach(c => c.items.forEach(it => set.add(it.s))); return set; }
+  function conflictedMentorKeys(){ return new Set(getConflicts().clusters.map(c => mentorKeyOf(c.mentor))); }
+  function minutesToLabel(mins){
+    const h = Math.floor(((mins % 1440) + 1440) % 1440 / 60);
+    const m = ((mins % 60) + 60) % 60;
+    const suffix = h < 12 ? 'am' : 'pm';
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12}:${String(m).padStart(2,'0')}${suffix}`;
+  }
+
+  // ---------- filtering ----------
+  function matchesFilters(s){
+    if(state.course !== 'all' && s.code !== state.course) return false;
+    if(state.batch !== 'all' && s.course !== state.batch) return false;
+    if(state.coordinator !== 'all'){
+      const c = sessionCoordinator(s) || '__unassigned__';
+      if(c !== state.coordinator) return false;
+    }
+    if(state.teamlead !== 'all'){
+      const t = sessionTeamLead(s) || '__unassigned__';
+      if(t !== state.teamlead) return false;
+    }
+    if(state.mentor !== 'all' && mentorKeyOf(s.mentor) !== state.mentor) return false;
+    if(state.month !== 'all'){ if(!s.date || s.date.slice(0,7) !== state.month) return false; }
+    if(state.status !== 'all' && s.status !== state.status) return false;
+    if(state.query){
+      const q = state.query.toLowerCase();
+      const hay = [s.session_name, s.mentor, s.session_no, s.course, s.code, sessionCoordinator(s), sessionTeamLead(s)].filter(Boolean).join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  }
+  function filteredSessions(){ return SESSIONS.filter(matchesFilters); }
+
+  function escapeHtml(str){
+    return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- generic aggregation (coordinators / team leads / courses / batches / months) ----------
+  function aggregate(sessions, keyFn, labelFn, sortMode){
+    const map = new Map();
+    sessions.forEach(s => {
+      let key = keyFn(s);
+      const missing = key === null || key === undefined || key === '';
+      const k = missing ? '__unassigned__' : key;
+      if(!map.has(k)) map.set(k, { key: k, label: missing ? 'Unassigned' : labelFn(key, s), total: 0, confirmed: 0, tbc: 0, pending: 0, items: [] });
+      const g = map.get(k);
+      g.total++; g.items.push(s);
+      if(s.status === 'Confirmed') g.confirmed++;
+      else if(s.status === 'TBC') g.tbc++;
+      else g.pending++;
+    });
+    const arr = Array.from(map.values());
+    arr.forEach(g => { g.rate = g.total ? Math.round((g.confirmed/g.total)*100) : 0; });
+    if(sortMode === 'key-asc') arr.sort((a,b) => String(a.key).localeCompare(String(b.key)));
+    else arr.sort((a,b) => b.total - a.total || a.label.localeCompare(b.label));
+    return arr;
+  }
+  function rateColor(rate){ return rate >= 90 ? 'var(--good)' : rate >= 70 ? 'var(--warn)' : 'var(--critical)'; }
+
+  function renderMetricList(containerId, groups, opts){
+    opts = opts || {};
+    const el = document.getElementById(containerId);
+    if(!groups.length){ el.innerHTML = `<div class="empty-state">${opts.emptyText || 'No data yet for this breakdown.'}</div>`; return; }
+    el.innerHTML = groups.map(g => `
+      <div class="metric-row">
+        <div class="metric-name">
+          <span class="who" title="${escapeHtml(g.label)}">${escapeHtml(g.label)}</span>
+          ${opts.metaFn ? `<span class="meta">${opts.metaFn(g)}</span>` : ''}
+        </div>
+        <div class="metric-bar"><i style="width:${g.rate}%; background:${rateColor(g.rate)}"></i></div>
+        <div class="metric-meta">
+          <div class="metric-status">
+            ${g.confirmed ? `<span style="color:var(--good)"><b class="num">${g.confirmed}</b> conf</span>` : ''}
+            ${g.tbc ? `<span style="color:var(--warn)"><b class="num">${g.tbc}</b> tbc</span>` : ''}
+            ${g.pending ? `<span style="color:var(--pending)"><b class="num">${g.pending}</b> pend</span>` : ''}
+          </div>
+          <span class="metric-rate num" style="color:${rateColor(g.rate)}">${g.rate}%</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // ---------- header stats ----------
+  function computeGlobalStats(){
+    const total = SESSIONS.length;
+    const confirmed = SESSIONS.filter(s => s.status === 'Confirmed').length;
+    const notConfirmed = total - confirmed;
+    const rate = total ? Math.round((confirmed/total)*100) : 0;
+    return { total, confirmed, notConfirmed, rate, batchCount: batches.length };
+  }
+  function renderStats(){
+    const g = computeGlobalStats();
+    const stats = document.getElementById('stats');
+    stats.innerHTML = `
+      <div class="stat">
+        <div class="top-row"><span class="label">Total sessions</span><span class="icon tone-neutral"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span></div>
+        <span class="value num">${g.total}</span>
+        <span class="sub muted">${g.batchCount} active batch${g.batchCount===1?'':'es'}</span>
+      </div>
+      <div class="stat">
+        <div class="top-row"><span class="label">Confirmed</span><span class="icon tone-good"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></span></div>
+        <span class="value num" style="color:var(--good)">${g.confirmed}</span>
+        <span class="sub good">Ready for lecture</span>
+      </div>
+      <div class="stat">
+        <div class="top-row"><span class="label">Pending confirmation</span><span class="icon tone-warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span></div>
+        <span class="value num" style="color:var(--warn)">${g.notConfirmed}</span>
+        <span class="sub warn">Awaiting mentor response</span>
+      </div>
+      <div class="stat">
+        <div class="top-row"><span class="label">Confirmation %</span><span class="icon tone-accent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span></div>
+        <span class="value num">${g.rate}%</span>
+        <span class="sub muted">Target: 95%</span>
+        <div class="target-bar"><i style="width:${Math.min(100,g.rate)}%"></i></div>
+      </div>`;
+
+    document.getElementById('countSessions').textContent = String(g.total);
+    document.getElementById('countPending').textContent = String(g.notConfirmed);
+    const conflictCount = getConflicts().clusters.reduce((n,c) => n + c.items.length, 0);
+    const badge = document.getElementById('countConflicts');
+    if(conflictCount){ badge.hidden = false; badge.textContent = String(getConflicts().clusters.length); }
+    else badge.hidden = true;
+  }
+
+  // ---------- highlights banner ----------
+  function modeOf(values){
+    const counts = new Map();
+    values.forEach(v => { if(!v) return; counts.set(v, (counts.get(v)||0)+1); });
+    let best = null, bestN = 0;
+    Array.from(counts.entries()).sort((a,b) => a[0].localeCompare(b[0])).forEach(([v,n]) => { if(n > bestN){ best = v; bestN = n; } });
+    return best;
+  }
+  function renderHighlights(){
+    const byCode = aggregate(SESSIONS, s => s.code, c => c);
+    const byBatch = aggregate(SESSIONS, s => s.course, c => c);
+    const topCourse = byCode[0] ? byCode[0].key : '—';
+    const topBatch = byBatch[0] ? byBatch[0].key : '—';
+    const topMentor = modeOf(SESSIONS.map(s => cleanStr(s.mentor))) || '—';
+    const topCoordinator = modeOf(COURSES_OVERVIEW.map(o => cleanStr(o.coordinator))) || 'Unassigned';
+    const g = computeGlobalStats();
+    const upcoming = dated.filter(s => s.date >= TODAY_ISO).sort((a,b) => a.date.localeCompare(b.date))[0];
+
+    document.getElementById('hlCourse').textContent = topCourse;
+    const batchEl = document.getElementById('hlBatch');
+    batchEl.textContent = topBatch; batchEl.title = topBatch;
+    document.getElementById('hlMentor').textContent = topMentor;
+    document.getElementById('hlCoordinator').textContent = topCoordinator;
+    document.getElementById('hlRate').textContent = g.rate + '% ready';
+    const nextEl = document.getElementById('hlNext');
+    if(upcoming){
+      const label = fmtDate(upcoming.date) + ' · ' + (upcoming.session_name || upcoming.session_no || upcoming.course);
+      nextEl.textContent = label; nextEl.title = label;
+    } else { nextEl.textContent = 'None scheduled'; nextEl.title = ''; }
+  }
+
+  // ---------- filter population ----------
+  function fillSelect(id, options, current){
+    const el = document.getElementById(id);
+    const values = new Set(options.map(o => o.value));
+    const keep = values.has(current) ? current : 'all';
+    el.innerHTML = options.map(o => `<option value="${escapeHtml(o.value)}" ${o.value===keep?'selected':''}>${escapeHtml(o.label)}</option>`).join('');
+    return keep;
+  }
+  function populateFilters(){
+    const coordinators = new Set(), teamleads = new Set(), mentors = new Map(), months = new Set();
+    SESSIONS.forEach(s => {
+      const c = sessionCoordinator(s); coordinators.add(c || '__unassigned__');
+      const t = sessionTeamLead(s); teamleads.add(t || '__unassigned__');
+      const mk = mentorKeyOf(s.mentor); if(mk) mentors.set(mk, String(s.mentor).trim().replace(/\s+/g,' '));
+      if(s.date) months.add(s.date.slice(0,7));
+    });
+
+    state.course = fillSelect('f-course', [{value:'all', label:'All courses'}].concat(codes.map(c => ({value:c, label:c}))), state.course);
+    state.batch = fillSelect('f-batch', [{value:'all', label:'All batches'}].concat(batches.map(b => ({value:b, label:b}))), state.batch);
+    state.coordinator = fillSelect('f-coordinator', [{value:'all', label:'All coordinators'}].concat(
+      Array.from(coordinators).sort().map(c => ({value:c, label: c==='__unassigned__' ? 'Unassigned' : c}))
+    ), state.coordinator);
+    state.teamlead = fillSelect('f-teamlead', [{value:'all', label:'All team leads'}].concat(
+      Array.from(teamleads).sort().map(t => ({value:t, label: t==='__unassigned__' ? 'Unassigned' : t}))
+    ), state.teamlead);
+    state.mentor = fillSelect('f-mentor', [{value:'all', label:'All mentors'}].concat(
+      Array.from(mentors.entries()).sort((a,b) => a[1].localeCompare(b[1])).map(([k,name]) => ({value:k, label:name}))
+    ), state.mentor);
+    state.month = fillSelect('f-month', [{value:'all', label:'All months'}].concat(
+      Array.from(months).sort().map(m => ({value:m, label: monthLabelFromKey(m)}))
+    ), state.month);
+    document.getElementById('f-status').value = state.status;
+  }
+
+  // ---------- status pill / session row ----------
+  function statusPill(status){ return `<span class="status-pill ${status}"><span class="dot"></span>${status}</span>`; }
+  function sessionRow(s, clashes){
+    const color = courseColor(s.code);
+    const dateLabel = s.date_end ? `${fmtDate(s.date)} – ${fmtDate(s.date_end)}` : fmtDate(s.date);
+    const isClash = clashes && clashes.has(s);
+    return `<div class="session-row">
+      <div class="bar" style="background:${color}"></div>
+      <div class="session-main">
+        <div class="name">${escapeHtml(s.session_name || s.session_no || 'Untitled session')}</div>
+        <div class="meta">
+          <span>${escapeHtml(s.course)}</span>
+          ${s.session_no ? `<span>· ${escapeHtml(s.session_no)}</span>` : ''}
+          ${s.mentor ? `<span>· ${escapeHtml(s.mentor)}</span>` : ''}
+          ${s.time ? `<span>· ${escapeHtml(s.time)}</span>` : ''}
+          ${!s.date ? `<span>· ${dateLabel==='—' ? 'date not set' : dateLabel}</span>` : ''}
+        </div>
+      </div>
+      <div class="row-wrap">
+        ${statusPill(s.status)}
+        ${isClash ? `<span class="status-pill clash"><span class="dot"></span>Clash</span>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // ---------- Overview ----------
+  function renderOverview(){
+    const pendingSessions = SESSIONS.filter(s => s.status !== 'Confirmed');
+    const byBatch = aggregate(pendingSessions, s => s.course, c => c).slice(0, 6);
+    document.getElementById('pipelineBadge').textContent = pendingSessions.length ? 'Action required' : 'All clear';
+    document.getElementById('pipelineList').innerHTML = byBatch.length ? byBatch.map(g => {
+      const ov = batchOverviewMap.get(g.key);
+      const meta = [];
+      if(ov && ov.coordinator) meta.push('Coordinator: ' + escapeHtml(ov.coordinator));
+      if(ov && ov.team_lead) meta.push('Team lead: ' + escapeHtml(ov.team_lead));
+      if(!meta.length) meta.push('Coordinator not yet assigned');
+      return `<div class="pipeline-card">
+        <div class="row1"><span class="batch-name" title="${escapeHtml(g.key)}">${escapeHtml(g.key)}</span><span class="count-pill">${g.total} pending</span></div>
+        <div class="meta">${meta.join(' · ')}</div>
+      </div>`;
+    }).join('') : `<div class="empty-state">Nothing awaiting confirmation right now.</div>`;
+
+    const upcoming = dated.filter(s => s.date >= TODAY_ISO).sort((a,b) => a.date.localeCompare(b.date) || a.sl - b.sl).slice(0, 6);
+    document.getElementById('upcomingList').innerHTML = upcoming.length ? upcoming.map(s => {
+      const d = parseISO(s.date);
+      return `<div class="upcoming-row">
+        <div class="date-badge"><span class="mo">${d.toLocaleDateString('en-GB',{month:'short'})}</span><span class="dy num">${d.getDate()}</span></div>
+        <div>
+          <div class="name">${escapeHtml(s.session_name || s.session_no || 'Untitled session')}</div>
+          <div class="meta">${escapeHtml(s.course)}${s.time ? ' · ' + escapeHtml(s.time) : ''}</div>
+        </div>
+        ${statusPill(s.status)}
+      </div>`;
+    }).join('') : `<div class="empty-state">No upcoming sessions scheduled.</div>`;
+  }
+
+  // ---------- Pending (full) ----------
+  function renderPendingFull(){
+    const pendingSessions = filteredSessions().filter(s => s.status !== 'Confirmed');
+    const byBatch = aggregate(pendingSessions, s => s.course, c => c);
+    const el = document.getElementById('pendingFullList');
+    if(!byBatch.length){ el.innerHTML = `<div class="empty-state">Nothing awaiting confirmation for the current filters.</div>`; return; }
+    el.innerHTML = byBatch.map(g => {
+      const ov = batchOverviewMap.get(g.key);
+      const meta = [];
+      if(ov && ov.coordinator) meta.push('Coordinator: ' + escapeHtml(ov.coordinator));
+      if(ov && ov.team_lead) meta.push('Team lead: ' + escapeHtml(ov.team_lead));
+      if(!meta.length) meta.push('Coordinator not yet assigned');
+      const rows = g.items.slice().sort((a,b) => (a.date||'9999').localeCompare(b.date||'9999')).map(s => sessionRow(s, null)).join('');
+      return `<div class="pipeline-card">
+        <div class="row1"><span class="batch-name" title="${escapeHtml(g.key)}">${escapeHtml(g.key)}</span><span class="count-pill">${g.total} pending</span></div>
+        <div class="meta">${meta.join(' · ')}</div>
+        <div>${rows}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ---------- Coordinators / Team leads ----------
+  function batchAndCourseCount(g){
+    const nCourses = new Set(g.items.map(s => s.code)).size;
+    const nBatches = new Set(g.items.map(s => s.course)).size;
+    return `${nCourses} course${nCourses===1?'':'s'} · ${nBatches} batch${nBatches===1?'':'es'}`;
+  }
+  function renderCoordinators(){
+    const groups = aggregate(SESSIONS, sessionCoordinator, c => c);
+    const onlyUnassigned = groups.length === 1 && groups[0].key === '__unassigned__';
+    renderMetricList('coordinatorList', groups, {
+      metaFn: batchAndCourseCount,
+      emptyText: onlyUnassigned ? 'No coordinators recorded yet — fill them in on the MIS tab to see this breakdown.' : undefined,
+    });
+  }
+  function renderTeamLeads(){
+    const groups = aggregate(SESSIONS, sessionTeamLead, t => t);
+    renderMetricList('teamleadList', groups, { metaFn: batchAndCourseCount });
+  }
+
+  // ---------- Courses / Batches (cards) ----------
+  function renderCourses(){
+    const grid = document.getElementById('courseGrid');
+    const groups = aggregate(SESSIONS, s => s.code, c => c);
+    grid.innerHTML = groups.map(g => {
+      const code = g.key;
+      const color = courseColor(code);
+      const nBatches = new Set(g.items.map(s => s.course)).size;
+      const overviews = batches.filter(b => batchOverviewMap.get(b) && SESSIONS.some(s => s.course===b && s.code===code)).map(b => batchOverviewMap.get(b));
+      const coordinators = Array.from(new Set(overviews.map(o => o.coordinator).filter(Boolean)));
+      const upcoming = g.items.filter(s => s.date && s.date >= TODAY_ISO).sort((a,b) => a.date.localeCompare(b.date))[0];
+      return `<div class="card-tile">
+        <div class="head">
+          <div><h3>${escapeHtml(code)}</h3><div class="code-status"><span class="mis-pill">${nBatches} batch${nBatches===1?'':'es'}</span></div></div>
+          <div class="bar" style="background:${color}"></div>
+        </div>
+        <div class="progress"><i style="width:${g.rate}%; background:${rateColor(g.rate)}"></i></div>
+        <div class="stats-line">
+          <span><b class="num">${g.confirmed}</b> / ${g.total} confirmed</span>
+          <span>Next: <b>${upcoming ? fmtDate(upcoming.date) : '—'}</b></span>
+        </div>
+        <dl class="fields">
+          <dt>Coordinator</dt><dd>${coordinators.length ? escapeHtml(coordinators.join(', ')) : '—'}</dd>
+          <dt>Confirmation</dt><dd>${g.rate}%</dd>
+        </dl>
+        <button data-code="${escapeHtml(code)}">View sessions →</button>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('button[data-code]').forEach(btn => btn.addEventListener('click', () => {
+      state.course = btn.dataset.code; document.getElementById('f-course').value = btn.dataset.code;
+      setView('sessions'); renderCurrentView();
+    }));
+  }
+  function renderBatches(){
+    const grid = document.getElementById('batchGrid');
+    const groups = aggregate(SESSIONS, s => s.course, c => c);
+    grid.innerHTML = groups.map(g => {
+      const code = g.items[0].code;
+      const color = courseColor(code);
+      const ov = batchOverviewMap.get(g.key);
+      const upcoming = g.items.filter(s => s.date && s.date >= TODAY_ISO).sort((a,b) => a.date.localeCompare(b.date))[0];
+      return `<div class="card-tile">
+        <div class="head">
+          <div><h3 title="${escapeHtml(g.key)}">${escapeHtml(g.key)}</h3><div class="code-status"><span class="mis-pill">${escapeHtml(code)}</span>${ov && ov.status ? `<span class="mis-pill">${escapeHtml(ov.status)}</span>` : ''}</div></div>
+          <div class="bar" style="background:${color}"></div>
+        </div>
+        <div class="progress"><i style="width:${g.rate}%; background:${rateColor(g.rate)}"></i></div>
+        <div class="stats-line">
+          <span><b class="num">${g.confirmed}</b> / ${g.total} confirmed</span>
+          <span>Next: <b>${upcoming ? fmtDate(upcoming.date) : '—'}</b></span>
+        </div>
+        <dl class="fields">
+          <dt>Coordinator</dt><dd>${ov && ov.coordinator ? escapeHtml(ov.coordinator) : '—'}</dd>
+          <dt>Team lead</dt><dd>${ov && ov.team_lead ? escapeHtml(ov.team_lead) : '—'}</dd>
+        </dl>
+        <button data-batch="${escapeHtml(g.key)}">View sessions →</button>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('button[data-batch]').forEach(btn => btn.addEventListener('click', () => {
+      state.batch = btn.dataset.batch; document.getElementById('f-batch').value = btn.dataset.batch;
+      setView('sessions'); renderCurrentView();
+    }));
+  }
+
+  // ---------- Mentors (workload + conflicts) ----------
+  function computeMentorWorkload(){
+    const byMentor = new Map();
+    SESSIONS.forEach(s => {
+      const key = mentorKeyOf(s.mentor);
+      if(!key) return;
+      if(!byMentor.has(key)) byMentor.set(key, { mentor: String(s.mentor).trim().replace(/\s+/g,' '), total:0, byCourse:new Map(), courses:new Set(), confirmed:0, tbc:0, pending:0 });
+      const m = byMentor.get(key);
+      m.total++; m.byCourse.set(s.code, (m.byCourse.get(s.code)||0)+1); m.courses.add(s.code);
+      if(s.status === 'Confirmed') m.confirmed++; else if(s.status === 'TBC') m.tbc++; else m.pending++;
+    });
+    return Array.from(byMentor.values()).sort((a,b) => b.total - a.total || a.mentor.localeCompare(b.mentor));
+  }
+  function renderConflicts(){
+    const { clusters, skippedNoTime, consideredCount } = getConflicts();
+    const list = document.getElementById('conflictList');
+    const durationNote = `${state.conflictDurationMin}-minute`;
+    if(!clusters.length){
+      list.innerHTML = `<div class="panel all-clear">
+        <span class="big">✓ No mentor conflicts found</span>
+        <span>Checked ${consideredCount} dated session${consideredCount===1?'':'s'} with a named mentor and a readable time, assuming ${durationNote} sessions.</span>
+        ${skippedNoTime ? `<span class="skip-list">${skippedNoTime} session${skippedNoTime===1?'':'s'} couldn't be checked — no readable time.</span>` : ''}
+      </div>`;
+      return;
+    }
+    list.innerHTML = clusters.map(c => {
+      const items = c.items.slice().sort((a,b) => a.start - b.start);
+      return `<div class="conflict-card">
+        <div class="conflict-head"><span class="who">${escapeHtml(c.mentor)}</span><span class="when">${fmtDate(c.date)} · ${items.length} overlapping sessions</span></div>
+        <div class="conflict-sessions">
+          ${items.map(it => `<div class="conflict-session">
+            <div class="bar" style="background:${courseColor(it.s.code)}"></div>
+            <div><div class="name">${escapeHtml(it.s.session_name || it.s.session_no || 'Untitled session')}</div><div class="meta">${escapeHtml(it.s.code)}${it.s.session_no ? ' · ' + escapeHtml(it.s.session_no) : ''}</div></div>
+            <div class="clock">${minutesToLabel(it.start)}–${minutesToLabel(it.end)}</div>
+          </div>`).join('')}
+        </div>
+        <div class="conflict-note">Same mentor, overlapping time — assumes each session runs ${durationNote} from its listed start time.</div>
+      </div>`;
+    }).join('') + (skippedNoTime ? `<p class="skip-list">${skippedNoTime} other session${skippedNoTime===1?'':'s'} couldn't be checked — no readable time.</p>` : '');
+  }
+  function renderWorkload(){
+    const data = computeMentorWorkload();
+    const conflicted = conflictedMentorKeys();
+    document.getElementById('workloadLegend').innerHTML = codes.map(code =>
+      `<span class="item"><span class="dot" style="background:${courseColor(code)}"></span>${escapeHtml(code)}</span>`
+    ).join('');
+    const maxTotal = data.reduce((m,d) => Math.max(m,d.total), 0) || 1;
+    const list = document.getElementById('workloadList');
+    list.innerHTML = data.length ? data.map(d => {
+      const key = mentorKeyOf(d.mentor);
+      const segs = codes.filter(code => d.byCourse.has(code)).map(code => {
+        const count = d.byCourse.get(code);
+        const pct = (count / maxTotal) * 100;
+        return `<div class="seg" style="width:${pct}%; background:${courseColor(code)}" title="${escapeHtml(code)}: ${count} session${count===1?'':'s'}"></div>`;
+      }).join('');
+      return `<div class="wl-row">
+        <div class="wl-name">
+          ${conflicted.has(key) ? `<span class="clashflag" title="Has a scheduling conflict right now"></span>` : ''}
+          <span class="who" title="${escapeHtml(d.mentor)}">${escapeHtml(d.mentor)}</span>
+          ${d.courses.size > 1 ? `<span class="multi">${d.courses.size} courses</span>` : ''}
+        </div>
+        <div class="wl-bar">${segs}</div>
+        <div class="wl-meta">
+          <div class="wl-status">
+            ${d.confirmed ? `<span style="color:var(--good)"><b class="num">${d.confirmed}</b> conf</span>` : ''}
+            ${d.tbc ? `<span style="color:var(--warn)"><b class="num">${d.tbc}</b> tbc</span>` : ''}
+            ${d.pending ? `<span style="color:var(--pending)"><b class="num">${d.pending}</b> pend</span>` : ''}
+          </div>
+          <span class="wl-total num">${d.total}</span>
+        </div>
+      </div>`;
+    }).join('') : `<div class="empty-state">No named mentors found in the data.</div>`;
+  }
+  function renderMentors(){ renderConflicts(); renderWorkload(); }
+
+  // ---------- Sessions table ----------
+  function renderSessions(){
+    const clashes = clashSet();
+    const rows = filteredSessions().filter(s => s.date).sort((a,b) => a.date.localeCompare(b.date) || a.sl - b.sl);
+    document.getElementById('sessionTbody').innerHTML = rows.length ? rows.map(s => `
+      <tr${clashes.has(s) ? ' class="clash-row"' : ''}>
+        <td class="date">${s.date_end ? fmtDate(s.date)+' – '+fmtDate(s.date_end) : fmtDate(s.date)}</td>
+        <td><span class="course-tag"><span class="dot" style="background:${courseColor(s.code)}"></span>${escapeHtml(s.code)}</span></td>
+        <td class="name" title="${escapeHtml(s.course)}">${escapeHtml(s.course)}</td>
+        <td class="name">${escapeHtml(s.session_name || s.session_no || 'Untitled session')}${s.session_no && s.session_name ? `<div style="color:var(--text-muted); font-size:11px;">${escapeHtml(s.session_no)}</div>` : ''}</td>
+        <td>${escapeHtml(s.mentor || '—')}</td>
+        <td class="num">${escapeHtml(s.time || '—')}</td>
+        <td><div class="row-wrap">${statusPill(s.status)}${clashes.has(s) ? `<span class="status-pill clash"><span class="dot"></span>Clash</span>` : ''}</div></td>
+      </tr>`).join('') : `<tr><td colspan="7" class="empty-state">No sessions match the current filters.</td></tr>`;
+
+    const unscheduled = filteredSessions().filter(s => !s.date && (s.session_name || s.session_no));
+    const up = document.getElementById('unscheduledPanel');
+    up.innerHTML = `<p class="section-label">Not yet scheduled</p>` + (unscheduled.length
+      ? '<div style="margin-top:6px;">' + unscheduled.map(s => sessionRow(s, clashes)).join('') + '</div>'
+      : `<div class="empty-state">Nothing pending a date for the current filters.</div>`);
+  }
+
+  // ---------- Confirmation rates ----------
+  function renderRates(){
+    renderMetricList('rateCourse', aggregate(SESSIONS, s => s.code, c => c));
+    renderMetricList('rateBatch', aggregate(SESSIONS, s => s.course, c => c));
+    renderMetricList('rateCoordinator', aggregate(SESSIONS, sessionCoordinator, c => c));
+    renderMetricList('rateTeamlead', aggregate(SESSIONS, sessionTeamLead, t => t));
+    renderMetricList('rateMonth', aggregate(dated, s => s.date.slice(0,7), monthLabelFromKey, 'key-asc'));
+  }
+
+  // ---------- calendar ----------
+  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function renderDow(){ document.getElementById('dowRow').innerHTML = DOW.map(d => `<div class="cal-dow">${d}</div>`).join(''); }
+  function clampMonth(){
+    if(!minDate || !maxDate) return;
+    const cur = new Date(state.monthY, state.monthM, 1);
+    if(cur < new Date(minDate.getFullYear(), minDate.getMonth(), 1)){ state.monthY = minDate.getFullYear(); state.monthM = minDate.getMonth(); }
+    if(cur > new Date(maxDate.getFullYear(), maxDate.getMonth(), 1)){ state.monthY = maxDate.getFullYear(); state.monthM = maxDate.getMonth(); }
+  }
+  function renderCalendar(){
+    clampMonth();
+    const y = state.monthY, m = state.monthM;
+    document.getElementById('monthLabel').textContent = new Date(y, m, 1).toLocaleDateString('en-GB', {month:'long', year:'numeric'});
+    const atMin = minDate && (y === minDate.getFullYear() && m === minDate.getMonth());
+    const atMax = maxDate && (y === maxDate.getFullYear() && m === maxDate.getMonth());
+    document.getElementById('prevMonth').disabled = !!atMin;
+    document.getElementById('nextMonth').disabled = !!atMax;
+
+    const first = new Date(y, m, 1);
+    const startOffset = first.getDay();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    const cells = [];
+    for(let i=0; i<startOffset; i++) cells.push(null);
+    for(let d=1; d<=daysInMonth; d++) cells.push(d);
+    while(cells.length % 7 !== 0) cells.push(null);
+
+    const bySessions = filteredSessions().filter(s => s.date);
+    const map = {};
+    bySessions.forEach(s => { (map[s.date] = map[s.date] || []).push(s); });
+    const clashes = clashSet();
+
+    document.getElementById('calGrid').innerHTML = cells.map(d => {
+      if(d === null) return `<div class="cal-day out" style="visibility:hidden"></div>`;
+      const dateObj = new Date(y, m, d);
+      const iso = isoOf(dateObj);
+      const evs = map[iso] || [];
+      const isToday = sameDay(dateObj, TODAY);
+      const isSelected = iso === state.selectedDate;
+      const hasClash = evs.some(s => clashes.has(s));
+      const shown = evs.slice(0,3);
+      const more = evs.length - shown.length;
+      return `<button class="cal-day${isToday?' today':''}${isSelected?' selected':''}${hasClash?' has-clash':''}" data-date="${iso}">
+        <span class="dnum num">${d}${hasClash ? ' <span class="clash-dot" title="Mentor conflict"></span>' : ''}</span>
+        <span class="events">
+          ${shown.map(s => `<span class="ev-chip"><span class="dot" style="background:${courseColor(s.code)}"></span><span>${escapeHtml(s.session_name || s.session_no || 'Session')}</span></span>`).join('')}
+          ${more > 0 ? `<span class="ev-more">+${more} more</span>` : ''}
+        </span>
+      </button>`;
+    }).join('');
+
+    document.querySelectorAll('.cal-day[data-date]').forEach(btn => btn.addEventListener('click', () => {
+      state.selectedDate = btn.dataset.date; renderCalendar(); renderAgenda();
+    }));
+    renderAgenda();
+  }
+  function renderAgenda(){
+    const iso = state.selectedDate;
+    const d = parseISO(iso);
+    const label = d ? d.toLocaleDateString('en-GB', {weekday:'long', day:'2-digit', month:'long', year:'numeric'}) : '';
+    const evs = filteredSessions().filter(s => s.date === iso);
+    const clashes = clashSet();
+    document.getElementById('agendaPanel').innerHTML = `
+      <div class="agenda-head"><h3>${label}</h3>${d && sameDay(d, TODAY) ? '<span class="mis-pill">Today</span>' : ''}</div>
+      ${evs.length ? evs.map(s => sessionRow(s, clashes)).join('') : `<div class="empty-state">No sessions on this day for the current filters.</div>`}
+    `;
+  }
+
+  // ---------- view switching ----------
+  const VIEWS = ['overview','pending','coordinators','teamleads','courses','batches','mentors','sessions','rates','calendar'];
+  function setView(v){
+    state.view = v;
+    document.querySelectorAll('.tabbtn').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === v)));
+    VIEWS.forEach(name => { document.getElementById('view-' + name).hidden = name !== v; });
+  }
+  function renderCurrentView(){
+    switch(state.view){
+      case 'overview': renderOverview(); break;
+      case 'pending': renderPendingFull(); break;
+      case 'coordinators': renderCoordinators(); break;
+      case 'teamleads': renderTeamLeads(); break;
+      case 'courses': renderCourses(); break;
+      case 'batches': renderBatches(); break;
+      case 'mentors': renderMentors(); break;
+      case 'sessions': renderSessions(); break;
+      case 'rates': renderRates(); break;
+      case 'calendar': renderCalendar(); break;
+    }
+  }
+  function renderAll(){
+    renderStats();
+    renderHighlights();
+    renderCurrentView();
+  }
+
+  // ---------- wire up ----------
+  document.querySelectorAll('.tabbtn').forEach(t => t.addEventListener('click', () => { setView(t.dataset.view); renderCurrentView(); }));
+  document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => { setView(b.dataset.goto); renderCurrentView(); }));
+
+  document.getElementById('search').addEventListener('input', e => { state.query = e.target.value; renderCurrentView(); });
+  document.getElementById('f-course').addEventListener('change', e => { state.course = e.target.value; renderCurrentView(); });
+  document.getElementById('f-batch').addEventListener('change', e => { state.batch = e.target.value; renderCurrentView(); });
+  document.getElementById('f-coordinator').addEventListener('change', e => { state.coordinator = e.target.value; renderCurrentView(); });
+  document.getElementById('f-teamlead').addEventListener('change', e => { state.teamlead = e.target.value; renderCurrentView(); });
+  document.getElementById('f-mentor').addEventListener('change', e => { state.mentor = e.target.value; renderCurrentView(); });
+  document.getElementById('f-month').addEventListener('change', e => { state.month = e.target.value; renderCurrentView(); });
+  document.getElementById('f-status').addEventListener('change', e => { state.status = e.target.value; renderCurrentView(); });
+  document.getElementById('resetFilters').addEventListener('click', () => {
+    state.course='all'; state.batch='all'; state.coordinator='all'; state.teamlead='all'; state.mentor='all'; state.month='all'; state.status='all'; state.query='';
+    document.getElementById('search').value = '';
+    populateFilters();
+    renderCurrentView();
+  });
+
+  document.getElementById('prevMonth').addEventListener('click', () => { state.monthM--; if(state.monthM<0){state.monthM=11; state.monthY--;} renderCalendar(); });
+  document.getElementById('nextMonth').addEventListener('click', () => { state.monthM++; if(state.monthM>11){state.monthM=0; state.monthY++;} renderCalendar(); });
+  document.getElementById('todayBtn').addEventListener('click', () => { state.monthY = TODAY.getFullYear(); state.monthM = TODAY.getMonth(); state.selectedDate = isoOf(TODAY); renderCalendar(); });
+  document.getElementById('durationSelect').addEventListener('change', e => {
+    state.conflictDurationMin = parseInt(e.target.value, 10) || 60;
+    renderStats();
+    if(state.view === 'mentors') renderMentors();
+    if(state.view === 'calendar') renderCalendar();
+    if(state.view === 'sessions') renderSessions();
+  });
+
+  document.getElementById('genDate').textContent = INITIAL.generated;
+  renderDow();
+  populateFilters();
+  renderAll();
+
+  // ---------- CSV export ----------
+  function toCsvValue(v){
+    if(v === null || v === undefined) return '';
+    const s = String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+  }
+  async function exportCsv(){
+    const cols = ['course','code','sl','date','date_end','time','session_no','session_name','mentor','status','remarks'];
+    const header = ['Batch','Course','SL','Date','Date end','Time','Session no','Session name','Mentor','Status','Remarks','Coordinator','Team lead'];
+    const rows = filteredSessions().map(s => cols.map(c => toCsvValue(s[c])).concat([toCsvValue(sessionCoordinator(s)), toCsvValue(sessionTeamLead(s))]).join(','));
+    const csv = header.map(toCsvValue).join(',') + '\n' + rows.join('\n') + '\n';
+    const filename = 'course-calendar-sessions-' + isoOf(new Date()) + '.csv';
+
+    let downloads = null;
+    try { downloads = await claude.use('downloads'); } catch(e){ downloads = null; }
+    if(downloads){
+      try {
+        await downloads.save({ filename, data: new Blob([csv], {type:'text/csv'}) });
+        return;
+      } catch(err){ /* fall through to legacy path below */ }
+    }
+    try {
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch(e){ /* no viable export path in this view */ }
+  }
+  document.getElementById('exportBtn').addEventListener('click', exportCsv);
+
+  // ---------- live sync with the Google Sheet (via the viewer's Google Drive connector) ----------
+  function pad2(n){ return String(n).padStart(2, '0'); }
+  function dateToISO(v){
+    if(typeof v !== 'number' || !isFinite(v)) return null;
+    const ms = Math.round((v - 25569) * 86400 * 1000);
+    const d = new Date(ms);
+    return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth()+1) + '-' + pad2(d.getUTCDate());
+  }
+  function codeOf(name){ return name.split(' - ')[0].trim(); }
+  function normStatus(v){
+    if(v === undefined || v === null) return 'Pending';
+    const s = String(v).trim();
+    if(s === '') return 'Pending';
+    const low = s.toLowerCase();
+    if(low.includes('confr') || low.includes('confi')) return 'Confirmed';
+    if(s.toUpperCase() === 'TBC') return 'TBC';
+    return s;
+  }
+  function parseWorkbook(wb){
+    const sheetNames = wb.SheetNames || [];
+    const courseSheets = sheetNames.filter(n => n !== 'MIS' && n !== 'Mastersheet');
+    const sessions = [];
+    courseSheets.forEach(name => {
+      const ws = wb.Sheets[name];
+      if(!ws) return;
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+      if(rows.length < 3) return;
+      const courseTitle = cleanStr(rows[0][0]);
+      if(!courseTitle) return;
+      const ccode = codeOf(courseTitle);
+      for(let i=2; i<rows.length; i++){
+        const r = rows[i] || [];
+        if(r[0] === null || r[0] === undefined || r[0] === '') continue;
+        const sl = Number(r[0]);
+        if(Number.isNaN(sl)) continue;
+        const timeRaw = r[3];
+        const isTimeLike = typeof timeRaw === 'string' && (timeRaw.includes(':') || timeRaw.toLowerCase().includes('ist'));
+        let date, dateEnd, time, sessionNo, sessionName, mentor, status, remarks;
+        if(isTimeLike || timeRaw === null || timeRaw === undefined){
+          date = dateToISO(r[2]); dateEnd = null; time = cleanStr(timeRaw);
+          sessionNo = cleanStr(r[4]); sessionName = cleanStr(r[5]); mentor = cleanStr(r[6]);
+          status = normStatus(r[7]); remarks = cleanStr(r[8]);
+        } else {
+          date = dateToISO(r[2]); dateEnd = dateToISO(r[4]); time = null;
+          sessionNo = null; sessionName = cleanStr(r[5]); mentor = cleanStr(r[6]);
+          status = normStatus(r[7]); remarks = cleanStr(r[8]);
+        }
+        sessions.push({ course: courseTitle, code: ccode, sl, date, date_end: dateEnd, time, session_no: sessionNo, session_name: sessionName, mentor, status, remarks });
+      }
+    });
+    const coursesOverview = [];
+    if(sheetNames.includes('MIS')){
+      const ws = wb.Sheets['MIS'];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+      for(let i=1; i<rows.length; i++){
+        const r = rows[i] || [];
+        const name = cleanStr(r[1]);
+        if(!name) continue;
+        coursesOverview.push({ sl: r[0], course: name, code: codeOf(name), coordinator: cleanStr(r[2]), team_lead: cleanStr(r[3]), start: dateToISO(r[4]), end: dateToISO(r[5]), status: cleanStr(r[6]) || 'Not Started' });
+      }
+    }
+    if(!sessions.length) throw new Error('Parsed workbook had no recognizable session rows');
+    return { sessions, courses_overview: coursesOverview };
+  }
+
+  function setIntegrationBadge(live, label){
+    const badge = document.getElementById('integrationBadge');
+    badge.classList.toggle('live', !!live);
+    document.getElementById('integrationLabel').textContent = label;
+  }
+  function showNote(msg){ const note = document.getElementById('syncNote'); note.textContent = msg; note.hidden = false; }
+  function hideNote(){ document.getElementById('syncNote').hidden = true; }
+  function nowLabel(){ return new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}); }
+  function setSyncStatus(text, isError){
+    const el = document.getElementById('syncStatus');
+    el.textContent = text; el.classList.toggle('error', !!isError);
+  }
+
+  const SYNC_ERROR_COPY = {
+    needs_reauth: 'Google Drive needs to be reconnected — reconnect it in claude.ai Settings → Connectors, then hit Fetch again.',
+    server_not_connected: "Google Drive isn't connected for this account — add it in claude.ai Settings → Connectors, then hit Fetch again.",
+    selection_required: 'More than one Google Drive account is available — choose one in claude.ai, then hit Fetch again.',
+    consent_required: 'Allow Google Drive for this page when prompted, then hit Fetch again.',
+    not_in_manifest: "This page isn't allowed to read Google Drive for you right now.",
+    blocked_by_policy: "Your organization's policy blocks this page from reading Google Drive.",
+    approval_required: 'Reading this file needs approval from your organization first.',
+    server_unavailable: "Google Drive didn't respond in time — showing the last synced snapshot.",
+    tool_error: "Google Drive couldn't return the file — showing the last synced snapshot.",
+  };
+  function handleSyncError(err, wasAuto){
+    const code = err && err.code;
+    setSyncStatus('Sync failed · showing last snapshot', true);
+    showNote(SYNC_ERROR_COPY[code] || "Couldn't refresh from Google Drive right now — showing the last synced snapshot.");
+    if(wasAuto && err && err.retryable) setTimeout(() => refreshFromDrive({auto:false}), 1500 + Math.random()*1000);
+  }
+  async function refreshFromDrive(opts){
+    opts = opts || {};
+    const btn = document.getElementById('syncBtn');
+    btn.disabled = true;
+    setSyncStatus('Syncing…', false);
+    hideNote();
+
+    let mcp = null;
+    try { mcp = await claude.use('mcp'); } catch(e){ mcp = null; }
+    if(!mcp){
+      setIntegrationBadge(false, 'Demo snapshot');
+      setSyncStatus('Live sync unavailable in this view', false);
+      if(!opts.auto) showNote("Live sync isn't available in this view — showing the saved snapshot.");
+      btn.disabled = false;
+      return;
+    }
+    try {
+      const result = await mcp.callTool(CONNECTOR, 'download_file_content', { fileId: FILE_ID, exportMimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const payload = result && result.payload;
+      const base64 = payload && payload.content;
+      if(!base64) throw { code: 'tool_error', message: 'No file content returned' };
+      const wb = XLSX.read(base64, { type: 'base64' });
+      const parsed = parseWorkbook(wb);
+      SESSIONS = parsed.sessions;
+      COURSES_OVERVIEW = parsed.courses_overview;
+      recomputeDerived();
+      populateFilters();
+      renderAll();
+      setIntegrationBadge(true, 'Google Sheets integrated');
+      setSyncStatus('Live · synced ' + nowLabel(), false);
+      hideNote();
+      document.getElementById('footerNote').innerHTML = 'Live from Google Sheets · Course Calendar (2027–2028) · last synced ' + nowLabel();
+      btn.disabled = false;
+    } catch(err){
+      handleSyncError(err, opts.auto);
+      btn.disabled = false;
+    }
+  }
+  document.getElementById('syncBtn').addEventListener('click', () => refreshFromDrive({auto:false}));
+  refreshFromDrive({auto:true}).catch(() => {});
+})();
+
+</script>
